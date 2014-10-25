@@ -1,0 +1,34 @@
+# --------------------------------
+# Presentation Title: 	An epic split between OSGi tooling Eclipse PDE and BndTools
+# Presentation Type: 	presentation (50mn)
+# Difficulty Level: 	Intermediate
+# --------------------------------
+# Presentation Abstract (max 350 words, currently 296 words)
+# --------------------------------
+
+This talks describe the challenges, experiences and pitfalls stumbled upon the migration of existing Eclipse RCP applications to BndTools. 
+
+The driving force behind this migration was to leverage the power of the state-of-the art OSGi tooling BndTools for our daily work. So we wanted get the new kid on the block - BndTools! into our  existing tool chain based upon Eclipse, Apache Ant and IBM Jazz/RTC as SCM system.
+
+But... the existing code base is large and completely based upon Eclipse RCP and PDE usage. Luckily only a few PDE declarative services are used. Migrating completely to BndTools means loosing the PDE tooling for Eclipse extension-points. So we are entering a world, which we call "mixed-mode". 
+This means that we are using Eclipse IDE with BndTools for OSGi service development and manifest creation and PDE Plugin-Editor tools for Eclipse extension-points in parallel.
+
+So we will dive into the depths of the following areas of our software life-cycle process
+- set-up and continuous update process of the IDE
+- creating targets configurations for BndTools based upon existing PDE targets
+- keeping the targets of both worlds Eclipse PDE and BndTools in sync on updates
+- creating and syncing launch configurations
+- dealing with exclusively available concepts, like Eclipse Features and Feature launches
+- impact on development, launcher and debugging
+- alignment of the version concepts
+- extending the building process to use both BND and PDE builds 
+- assembly and releasing of the resulting Eclipse RCP and OSGi applications
+
+After this talk you should know what to expect from the journey to the flourishing gardens of BndTools.
+You will see why we wanted to benefit from bndtools usage and what we did to incorporate and deal with Eclipse PDE and BndTools in parallel in our daily work.
+
+# --------------------------------
+# Presenter Bios (max 300 words, used 74 words)
+# --------------------------------
+
+Peter is a freelancer and Java, OSGi enthusiast, who crafts as a developer, architect, build and release engineer in the industry. He has a special interest in creating sustainable, platform independent solutions by using few and clear interfaces in all software life-cycle areas. His motto is "Every error can happen, but it should only happens once!". So he is trying to automate everything from target creation, build, test, deployment, operation up to home automation.

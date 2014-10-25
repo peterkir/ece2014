@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>An epic split between OSGi tooling Eclipse PDE and bndtools - EclipseCon Europe 2014</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Peter Kirschner">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section id="title">
+					<h6>An epic split between OSGi tooling</h6>
+					<h3>Eclipse PDE and bndtools</h3>
+					<h6>experiences from a ongoing migration - started 2012</h6>
+					<a href="#/video_epic_split" alt="Volvo Trucks with Jean-Claude Van Damme">
+						<img src="images/Volvo-Trucks-The-Epic-Split6.jpg"  width="70%" alt="Volvo Trucks - Epic Split" /> 
+					</a>
+					<p>
+						<small>created by <a href="#/aboutme">Peter Kirschner</a> for <a href="https://www.eclipsecon.org/europe2014/">EclipseCon Europe 2014</a></small><br>
+					</p>
+					<tiny>
+						Seminarräume 1 - 3 - Wednesday, October 29, 2014 - 10:30 to 11:05<br>
+						copyright for Epic Split Theme is with Volvo Trucks<br>
+						<a href="?print-pdf">printable version</a>
+					</tiny>
+				</section>
+
+				<section data-markdown id="aboutme">
+					### About me
+
+					![](images/PeterKirschner.jpg "Peter Kirschner")
+
+					* name: Peter Kirschner
+					* profession: IT software engineer
+					* email: &#112;e&#116;e&#114;&#064;&#107;&#105;&#114;&#115;&#099;&#104;&#110;e&#114;&#115;&#046;&#100;&#101;
+					* twitter: [@peterkir](http://twitter.com/peterkir)
+					* github: https://peterkir.github.io/
+				</section>
+
+				<section data-markdown id="principles">
+					### Development Mantra
+					* bootstrap on OS
+					* everything
+						* locally - network is optional
+						* portable (copy and paste)
+							* java, eclipse, other tools
+							* settings (~/.xyz, %USERPROFILE%)
+							* eclipse (configuration, data, keyring, p2 data)
+							* target products
+					* be explicit and precise with versions for everything
+
+					* Yes, I do know Internet ;-) BUT it is slow or not available!
+				</section>
+
+				<section>
+					<section id="devenv_setup_1" data-markdown>
+						### Initial development environment setup
+						#### GOAL: getting java and bootstrap eclipse ready
+						
+						* install [Java SDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (&(osgi.ee=JavaSE)(version>=1.7))[*](#/standards)
+						* download [eclipse platform](http://download.eclipse.org/eclipse/downloads/)
+						* unzip and launch bootstrap eclipse
+						
+						* **ready for Environment DevOps**
+						
+					</section>
+					<section id="devenv_setup_2" data-markdown>
+						### prepare tooling and update setup
+						* [create local mirror of required tools p2 repositories](http://help.eclipse.org/luna/topic/org.eclipse.platform.doc.isv/guide/p2_mirror.html?resultof=%22%70%32%2e%6d%69%72%72%6f%72%22%20)
+							`mirror_repositories.xml`
+						* [install with p2 director Eclipse IDE including bndtools](http://help.eclipse.org/indigo/index.jsp?topic=/org.eclipse.platform.doc.isv/guide/p2_director.html)
+
+						* launch IDE and create a bndEvaluation workspace
+						* launch IDE and create the product workspace
+					</section>
+					<section id="devenv_setup_3" data-markdown>
+						### Update development environment setup with new bndtools
+
+						* install with p2 director Eclipse IDE including bndtools, ... into new location
+						* create evaluation workspace with default bnd configuration project
+						* compare/update bnd configuration project from eval to productive workspace
+					</section>
+				</section>
+
+				<section data-markdown>
+				### development target
+				#### eclipse
+				- *.target files can be stored inside project
+				- scope is always the whole IDE => **superset of all requirements of workspace projects!**
+	obr (bindex)
+
+				</section>
+				
+				<section>
+					<h2>Pretty Code</h2>
+					<pre><code data-trim contenteditable>
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="build"> 
+	<import file="../cnf/build.xml"></import>
+</project>
+					</code></pre>
+				</section>
+
+				<section>
+					<section id="fragments">
+						<h2>Fragmented Views</h2>
+						<p>Hit the next arrow...</p>
+						<p class="fragment">... to step through ...</p>
+						<ol>
+							<li class="fragment"><code>any type</code></li>
+							<li class="fragment"><em>of view</em></li>
+							<li class="fragment"><strong>fragments</strong></li>
+						</ol>
+
+						<aside class="notes">
+							This slide has fragments which are also stepped through in the notes window.
+						</aside>
+					</section>
+					<section>
+						<h2>Fragment Styles</h2>
+						<p>There's a few styles of fragments, like:</p>
+						<p class="fragment grow">grow</p>
+						<p class="fragment shrink">shrink</p>
+						<p class="fragment roll-in">roll-in</p>
+						<p class="fragment fade-out">fade-out</p>
+						<p class="fragment highlight-red">highlight-red</p>
+						<p class="fragment highlight-green">highlight-green</p>
+						<p class="fragment highlight-blue">highlight-blue</p>
+						<p class="fragment current-visible">current-visible</p>
+						<p class="fragment highlight-current-blue">highlight-current-blue</p>
+					</section>
+				</section>
+
+				<section id="pitfalls" data-markdown>
+					### common pitfalls
+
+					* problem: mirroring a p2 repository results in .blobstore folder
+					* solution: https://wiki.eclipse.org/Equinox/p2/p2.mirrorsURL#How_to_avoid_.blobstore_for_.2A.jar.pack.gz_files
+				</section>
+
+				<section>
+					<section data-markdown>
+						### Credits
+						
+						For sharing their great work I like to thank following
+
+						* people
+						* firms 
+						* organizations
+						
+						![down arrow](images/arrow.png)
+					</section>
+					<section data-markdown>
+						### Credits
+						
+						* BND / bndtools
+							* [BND](http://www.aqute.biz/Bnd/Bnd) 
+							* [Usergroup](https://groups.google.com/forum/#!forum/bndtools-users)
+							* [Source on Github](https://github.com/bndtools/bnd) 
+							* [Continuous Builds from Cloudbees](https://bndtools.ci.cloudbees.com/)
+						* [REVEAL.JS](http://lab.hakim.se/reveal-js/) - HTML presentations made easy by Hakim El Hattab
+					</section>
+					<section id="video_epic_split">
+						<h3>Volvo Trucks - Making of ...</h3>
+						<p>
+							<iframe width="640" height="390" src="https://www.youtube.com/embed/T0P_Ded5cbs" frameborder="0" allowfullscreen></iframe>
+						</p>
+						<p>
+							<small><a href="https://www.youtube.com/watch?v=M7FIvfx5J10" target="_blank">short version (1:16mn) - commercial spot only</a></small>
+						</p>
+					</section>
+					<section id="standards" data-markdown>
+						### used standards
+						
+						* [OSGi specifications](http://www.osgi.org/Specifications/HomePage)
+						* [LDAP search filter syntax](http://tools.ietf.org/search/rfc4515)
+						* [Semantic Versioning 2.0.0](http://semver.org/)
+					</section>
+					
+				</section>
+
+				<section>
+					<section>
+						<h1>BACKUP</h1>
+					</section>
+					<section data-markdown>
+						### Inspirations
+						
+						* [Peter Kriens](http://www.aqute.biz/Main/HomePage) - [osgi.enroute|principles](https://github.com/osgi/osgi.enroute/blob/master/osgi.enroute.doc/doc/en/1200-Principles.md)
+						* [Neil Bartlett](http://njbartlett.name/)
+							* [book: OSGi in practice](http://njbartlett.name/files/osgibook_preview_20091217.pdf)
+						* [Resource-oriented Client Architecture](http://roca-style.org/)
+					</section>
+
+					<section>
+						<h3>wanted BND/bndtools feature</h3>
+						<table>
+							<tr>
+								<td>automated import package analysis including versioning</td>
+								<td><img src="images/about01.png" alt="bndImportAnalysis" width="70%"/></td>
+							</tr>
+							<tr>
+								<td>powerful OSGi bundle repository management</td>
+								<td><img src="images/about02.png" alt="bndRepositoryManagement" width="70%"/></td>
+							</tr>
+							<tr>
+								<td>instant Jar bundle creation</td>
+								<td><img src="images/about04.png" alt="bndInstantJarBuilder" width="70%"/></td>
+							</tr>
+							<tr>
+								<td>annotation based Declarative Service implementation</td>
+								<td><img src="images/bndDeclarativeService.png" alt="bndDeclarativeService" width="70%"/></td>
+							</tr>
+						</table>
+					</section>
+					<section data-markdown>
+						### BND and bndtools resources
+						
+						* [website](http://bndtools.org/)
+						
+						* [bug reports/source code on GitHub](https://github.com/bndtools)
+
+						* [continuous build on cloudbees](https://bndtools.ci.cloudbees.com/job/bndtools.master/)
+
+						* [usergroup in GoogleGroups](https://groups.google.com/forum/#!forum/bndtools-users)
+					</section>
+
+					<section>
+						<h3>Developer Setup & environment</h3>
+						<code>
+						<table>
+							<tr>
+								<td>supported OS</td>
+								<td><ul>
+										<li>win32, win32, x86</li>
+										<li>win32, win32, x86_64</li>
+										<li>linux, gtk, x86</li>
+										<li>linux, gtk, x86_64</li>
+									</ul>
+								</td>
+							<!--
+								<img width="149" height="149" src="images/Windows_Vista_7_2006-2009.jpg" alt="Windows">
+								<img width="132" height="157" src="images/Tux.png" alt="Linux Tux">
+								-->
+							</tr>
+							<tr>
+								<td>target</td>
+								<td>eclipse 3.8.2</td>
+							</tr>
+							<tr>
+								<td>tools</td>
+								<td>
+									<ul>
+										<li>Apache ANT</li>
+										<li>PDE build from Eclipse SDK</li>
+										<li>[IBM RTC/jazz](https://jazz.net/products/rational-team-concert/</li>
+										<li>Git</li>
+									</ul>
+								</td>
+							</tr>
+						</table>
+						</code>
+					</section>
+				</section>
+				
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				overview: true,
+				slideNumber: true,
+				
+				theme: Reveal.getQueryHash().theme || 'solarized_pk', // beige,blood,default,moon,night,serif,simple,sky,solarized
+				transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
