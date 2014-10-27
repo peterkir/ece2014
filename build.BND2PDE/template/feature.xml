@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="@feature.id@"
+      label="@feature.name@"
+      version="@feature.version.qualifier@">
+
+   <description>
+      @feature.description@
+   </description>
+
+   <copyright>
+      All rights reserved by Daimler AG.
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+</feature>

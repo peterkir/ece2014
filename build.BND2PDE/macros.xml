@@ -1,0 +1,204 @@
+<!-- ======================================================================
+     ant macros for common usage 
+     ====================================================================== -->
+<project name="ant.macros" default="">
+	
+	<!-- = = = = = = = = = = = = = = = = =
+          macrodef: generateGUID
+          
+          create property containing a random generated UUID
+             with the name [__guid__]
+             inside a file named [guid.properties]
+             inside the root/project caller script folder or a specified file
+             only if target file is not already existing
+         = = = = = = = = = = = = = = = = = -->
+	<macrodef name="generateGUID">
+		<attribute name="targetFile" default="${__dir.project}/guid.properties" />
+		<sequential>
+
+			<dirname file="${ant.file}" property="__dir.platformProjectDir" />
+			<pathconvert property="__dir.project" targetos="unix">
+				<path location="${__dir.platformProjectDir}" />
+			</pathconvert>
+
+			<condition property="__existing.file.guid.properties__">
+				<available file="@{targetFile}" />
+			</condition>
+
+			<if>
+				<not>
+					<isset property="__existing.file.guid.properties__" />
+				</not>
+				<then>
+					<if>
+						<equals arg1="${java.vm.specification.version}" arg2="1.8" />
+						<then>
+							<echo message="import javascript snipper inside JRE ${java.vm.specification.version}" />
+							<scriptdef name="generateguid" language="javascript">
+								<attribute name="property" />
+								<![CDATA[
+						   load("nashorn:mozilla_compat.js");
+                           importClass( java.util.UUID );
+                           project.setProperty( attributes.get( "property" ), UUID.randomUUID() );
+                        ]]>
+							</scriptdef>
+						</then>
+						<else>
+							<echo message="import javascript snipper inside JRE ${java.vm.specification.version}" />
+							<scriptdef name="generateguid" language="javascript">
+								<attribute name="property" />
+								<![CDATA[
+                           importClass( java.util.UUID );
+                           project.setProperty( attributes.get( "property" ), UUID.randomUUID() );
+                        ]]>
+							</scriptdef>
+						</else>
+					</if>
+
+					<echo message="# Generate a globally unique identfier for this project inside @{targetFile}" />
+					<generateguid property="__guid__" />
+					<echoproperties destfile="@{targetFile}"
+					                prefix="__guid__"
+					                description="# This is a globally unique identifier for this workspace" />
+				</then>
+				<else>
+					<echo message="using existing property file @{targetFile}" />
+					<property file="@{targetFile}" />
+					<fail unless="__guid__"
+					      message="property __guid__ is not contained in the file @{targetFile}" />
+				</else>
+			</if>
+
+		</sequential>
+	</macrodef>
+
+	<!-- = = = = = = = = = = = = = = = = =
+	          macrodef: featureAndPluginPublisher
+	          
+	          publishes all bundles found recursively from dir.source to dir.repository
+	          defaults is appending and artifact publishing (if not desired append="" and publish="")          
+	         = = = = = = = = = = = = = = = = = -->
+	<macrodef name="featureAndPluginPublisher">
+		<attribute name="dir.source" />
+		<attribute name="dir.repository" />
+		<attribute name="append" default="-append" />
+		<attribute name="publish" default="-publishArtifacts" />
+		<attribute name="rt" default="${java.io.tmpdir}/featuresAndBundlesPublisher" />
+		<sequential>
+
+			<!-- deleteOnExit will not work here due to ant-contrib var usage -->
+			<tempfile property="temp.dir"
+			          destDir="${java.io.tmpdir}"
+			          prefix="antFeatureAndPluginPublisher" />
+
+			<mkdir dir="${temp.dir}/features" />
+			<copy todir="${temp.dir}/features" failonerror="false">
+				<fileset dir="@{dir.source}">
+					<include name="**/features/**" />
+				</fileset>
+				<mapper>
+					<regexpmapper from=".*?features[\\|/](.*)" to="\1" handledirsep="true" />
+				</mapper>
+			</copy>
+
+			<mkdir dir="${temp.dir}/plugins" />
+			<copy todir="${temp.dir}/plugins" failonerror="false">
+				<fileset dir="@{dir.source}">
+					<include name="**/*.jar" />
+				</fileset>
+			</copy>
+
+			<property name="eclipse.launcher" value="${ECLIPSE_BIN_DIR}/eclipse" />
+			<exec executable="${eclipse.launcher}">
+				<!-- <arg line="-consoleLog"/> -->
+				<arg line="-nosplash" />
+				<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
+				<arg line="-configuration @{rt}/config" />
+				<arg line="-data @{rt}/data" />
+				<arg line="-metadataRepository file:///@{dir.repository}" />
+				<arg line="-artifactRepository file:///@{dir.repository}" />
+				<arg line="-source ${temp.dir}" />
+				<arg line="@{publish}" />
+				<arg line="@{append}" />
+			</exec>
+
+			<delete dir="${temp.dir}" />
+
+			<var name="temp.dir" unset="true" />
+		</sequential>
+	</macrodef>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: createFeatureIncludeSectionForBundles  
+                    
+          gather the feature include section for bundles from a directory containing the bundle artifacts                    
+         - - - - - - - - - - - - - - - - - -->
+	<macrodef name="createFeatureIncludeSectionForBundles">
+		<attribute name="dir.bundles" />
+		<attribute name="file.includeSection" />
+		<sequential>
+			<echo message="generate feature include section for bundles from @{dir.bundles}" />
+			<fileset dir="@{dir.bundles}/plugins" id="id.bundleArtifacts">
+				<include name="*.jar" />
+			</fileset>
+
+			<echo message="creating for the feature a bundle include section for bundles ${bundleArtifacts}" />
+			<delete file="@{file.includeSection}" failonerror="false" />
+			<for param="bundleArtifact"
+			     list="${toString:id.bundleArtifacts}"
+			     delimiter=";">
+				<sequential>
+					<propertyregex property="bundleName"
+					               input="@{bundleArtifact}"
+					               regexp="([a-zA-Z0-9.\-_]+[_64|_32]?)_([0-9]*\.[0-9]*\.[0-9]*[\.a-zA-Z0-9\-_]+)\.jar"
+					               select="\1"
+					               casesensitive="false" />
+					<propertyregex property="bundleVersion"
+					               input="@{bundleArtifact}"
+					               regexp="([a-zA-Z0-9.\-_]+[_64|_32]?)_([0-9]*\.[0-9]*\.[0-9]*[\.a-zA-Z0-9\-_]+)\.jar"
+					               select="\2"
+					               casesensitive="false" />
+
+					<echo file="@{file.includeSection}"
+					      append="true"
+					      message="   &lt;plugin         id=&quot;${bundleName}&quot;         version=&quot;${bundleVersion}&quot;         unpack=&quot;false&quot;/&gt;${line.separator}${line.separator}" />
+					<var name="bundleName" unset="true" />
+					<var name="bundleVersion" unset="true" />
+				</sequential>
+			</for>
+		</sequential>
+	</macrodef>
+
+	<!-- = = = = = = = = = = = = = = = = =
+          macrodef: createFeatureXmlFile          
+         = = = = = = = = = = = = = = = = = -->
+	<macrodef name="createFeatureXmlFile">
+
+		<attribute name="filename" />
+		<attribute name="id" />
+		<attribute name="name" />
+		<attribute name="description" default="" />
+		<attribute name="version" default="1.0.0" />
+		<attribute name="includeFeatures" default="" />
+		<attribute name="includePlugins" default="" />
+		<attribute name="includeFragments" default="" />
+		<sequential>
+			<loadfile property="filecontent.feature"
+			          srcfile="template/feature.xml">
+				<filterchain>
+					<replacetokens>
+						<token key="feature.id" value="@{id}" />
+						<token key="feature.name" value="@{name}" />
+						<token key="feature.version.qualifier" value="@{version}" />
+						<token key="feature.description" value="@{description}" />
+						<token key="feature.includes" value="@{includeFeatures}" />
+						<token key="plugin.includes" value="@{includePlugins}" />
+						<token key="fragment.includes" value="@{includeFragments}" />
+					</replacetokens>
+				</filterchain>
+			</loadfile>
+			<echo message="${filecontent.feature}" file="@{filename}" />
+		</sequential>
+	</macrodef>
+
+</project>

@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Beta
+Bundle-SymbolicName: examples.pde.service.beta
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: examples.pde.service.beta.PDEBetaActivator
+Require-Bundle: org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Export-Package: examples.pde.service.beta

@@ -1,0 +1,145 @@
+<!-- ======================================================================
+     BND2PDE - this script generates a p2 repository which can be used inside the target 
+     ====================================================================== -->
+<project name="build-BND-2-PDE" default="publishBNDgeneratedBundles">
+
+	<dirname file="${ant.file}" property="dir.ant_build-BND-2-PDE" />
+	<pathconvert property="dir.prj" targetos="unix">
+		<path location="${dir.ant_build-BND-2-PDE}" />
+	</pathconvert>
+	<dirname property="dir.workspace" file="${dir.prj}" />
+	
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${dir.prj}/lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<import file="${dir.prj}/macros.xml" />
+	<generateGUID />
+
+	<echo message="create user targets with a user and workspace specific unique location" />
+	<delete dir="${dir.prj}/../target.eclipse/userspecific_targets" verbose="true" />
+	<copy todir="${dir.prj}/../target.eclipse/userspecific_targets">
+		<fileset dir="${dir.prj}/../target.eclipse/target" includes="*.target" />
+		<mapper type="glob" from="*" to="${user.name}_*" />
+	</copy>
+
+	<fileset dir="${dir.workspace}/target.eclipse/userspecific_targets" id="id.file.targets">
+		<include name="${user.name}_*.target" />
+	</fileset>
+	<replace token="path=&quot;${system_property:java.io.tmpdir}/buildBndBundles/repo_OSGi&quot;"
+	         value="path=&quot;${system_property:java.io.tmpdir}/buildBndBundles/${__guid__}/repo_OSGi&quot;"
+	         summary="true">
+		<fileset refid="id.file.targets" />
+	</replace>
+	<replace token="name=&quot;Framework Development"
+	         value="name=&quot; ${user.name} - Framework Development"
+	         summary="true">
+		<fileset refid="id.file.targets" />
+	</replace>
+	<replace token="name=&quot;EC Development" value="name=&quot; ${user.name} - EC Development" summary="true">
+		<fileset refid="id.file.targets" />
+	</replace>
+
+	<!-- script internal locations -->
+	<pathconvert property="dir.tmp" targetos="unix">
+		<path location="${java.io.tmpdir}/buildBndBundles/${__guid__}" />
+	</pathconvert>
+	<property name="dir.repo_OSGi-services" value="${dir.tmp}/repo_OSGi" />
+	<property name="dir.tmp.FeaturesAndBundlesPublisher" value="${dir.tmp}/rt/featureAndPluginPublisher" />
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: clean                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="clean">
+		<delete failonerror="false">
+			<fileset dir="${dir.tmp.FeaturesAndBundlesPublisher}" includes="**/*" />
+			<fileset dir="${java.io.tmpdir}/buildBndBundles/${__guid__}" includes="**/*" />
+		</delete>
+	</target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: init                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="init">
+		<tstamp>
+			<format property="NOW" pattern="yyyyMMdd-HHmmss" />
+		</tstamp>
+
+		<mkdir dir="${dir.tmp.FeaturesAndBundlesPublisher}" />
+		<available file="${dir.tmp.FeaturesAndBundlesPublisher}" property="existingFeaturesAndBundlesPublisher" />
+		<fail unless="existingFeaturesAndBundlesPublisher" />
+	</target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: gatherBundles                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="gatherBundles">
+
+		<echo message="# copying BND generated bundles to directory" />
+		<copy todir="${dir.tmp}/generated/plugins">
+			<fileset dir="${dir.prj}/..">
+				<include name="**/generated/*.jar" />
+				<exclude name="build.container.bnd/**" />
+			</fileset>
+			<flattenmapper />
+		</copy>
+	</target>
+
+
+	<!-- ================================= 
+          target: publishBNDgeneratedBundles              
+         ================================= -->
+	<target name="publishBNDgeneratedBundles" depends="clean,init,gatherBundles" description="description">
+
+		<echo message="# publishing the bnd generated bundles to a repository (adds the versions to the filenames)" />
+		<featureAndPluginPublisher dir.source="${dir.tmp}/generated"
+		                           dir.repository="${dir.repo_OSGi-services}"
+		                           append="" />
+
+		<echo message="# creating feature for including dynamically all bnd generated bundles" />
+		<property name="bundleIncludeSection_bnd2pde" value="${dir.tmp}/bundleIncludeSection.txt" />
+		<createFeatureIncludeSectionForBundles dir.bundles="${dir.repo_OSGi-services}"
+		                                       file.includesection="${bundleIncludeSection_bnd2pde}" />
+		<loadfile property="plugin.includes" srcfile="${bundleIncludeSection_bnd2pde}" />
+
+		<property name="featureNameContainer" value="target.container.bnd" />
+		<createFeatureXmlFile filename="${dir.tmp}/dynamic_feature/features/${featureNameContainer}/feature.xml"
+		                      id="${featureNameContainer}"
+		                      name="${featureNameContainer}"
+		                      version="1.0.0.${NOW}"
+		                      includeplugins="${plugin.includes}" />
+		<echo file="${dir.tmp}/dynamic_feature/features/${featureNameContainer}/build.properties"
+		      message="bin.includes = feature.xml" />
+		<copy todir="${dir.tmp}/dynamic_feature/features/${featureNameContainer}" file="template/p2.inf" />
+
+		<echo message="# publishing the bundles final p2 repository" />
+		<featureAndPluginPublisher dir.source="${dir.tmp}/dynamic_feature" dir.repository="${dir.repo_OSGi-services}" />
+
+		<fileset dir="${dir.repo_OSGi-services}/plugins" id="id.bundlesInRepo">
+			<include name="*jar" />
+		</fileset>
+		<pathconvert property="bundlesInRepo" targetos="unix" refid="id.bundlesInRepo">
+			<mapper>
+				<mapper type="flatten" />
+			</mapper>
+		</pathconvert>
+		<echo message="created repo containing following bundles:${bundlesInRepo}" />
+		<echo message="${bundlesInRepo}" />
+
+		<echo message="################################################################################" />
+		<echo message="### added the build repository as Software-Site to the user specific targets" />
+		<echo message="### inside the ${osgi.instance.area}/target.eclipse/userspecific_targets" />
+		<echo message="### repository resides inside the folder file:///${dir.repo_OSGi-services}" />
+		<echo message="################################################################################" />
+		<echo message="### if you miss plugins you must assure that " />
+		<echo message="### they have been properly build inside your workpsace by bndtools" />
+		<echo message="### and those should contain a folder named generated which is used by this script" />
+		<echo message="################################################################################" />
+
+	</target>
+
+</project>

@@ -1,0 +1,16 @@
+-buildpath: build.eclipse
+
+Bundle-Name: Application
+Bundle-SymbolicName: examples.bndtools.application;singleton:=true
+Bundle-Version: 1.0.0.${tstamp;yyyyMMdd-HHmmss}
+Bundle-Activator: example.pde.application.Activator
+Require-Bundle: \
+	org.eclipse.ui,\
+	org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+
+Private-Package: example.pde.application
+
+-includeresource: \
+    ${project}/root

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?artifactRepository version='1.1.0'?>
+<repository name='Build Template' type='org.eclipse.equinox.p2.artifact.repository.simpleRepository' version='1.0.0'>
+  <properties size='2'>
+    <property name='publishPackFilesAsSiblings' value='true'/>
+  </properties>
+</repository>

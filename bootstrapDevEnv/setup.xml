@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     setup script for a local development environment 
+
+	configuration happens inside the adjacent file setup.properties 
+     
+     - mirrors p2 repositories to the local machine
+     - installs the development environment called IDEfix
+     - copies a windows batch command file for starting isolated IDEfix with specific workspaces
+     
+     HINT: make sure to execute this with an eclipse antrunner, cause p2 ant tasks are used
+     ====================================================================== -->
+<project name="setup" default="fromEclipseFeatureLaunchConfiguration">
+
+	<!-- verbose ant log file creation of everything -->
+	<tstamp>
+		<format property="currentTime" pattern="yyyyMMdd-hhmmss" timezone="UTC" />
+	</tstamp>
+	<!--
+	<record name="${currentTime}_ant.log" loglevel="verbose" action="start" />
+	<echo message="logfile ${currentTime}_ant.log is found inside the executing working directory" />
+	-->
+
+	<dirname property="dir.script.os" file="${ant.file}" />
+	<pathconvert property="dir.script" targetos="unix">
+		<path location="${dir.script.os}" />
+	</pathconvert>
+
+	<target name="init">
+		<echo message="reading properties from file ${dir.script}/setup.properties" />
+		<loadproperties srcfile="${dir.script}/setup.properties" />
+		<property name="bindexer"
+		          value="${dir.script}/tools/org.osgi.impl.bundle.repoindex.cli-2.1.3.jar" />
+	</target>
+
+	<target name="fromEclipseFeatureLaunchConfiguration" depends="init">
+		<deltree dir="${java.io.tmpdir}/dynEclipseFeature2bndLib" />
+		<for param="feature.jar">
+			<fileset dir="${local.p2repos}/${uri.eclipseRelease}/features" includes="*.jar" />
+			<sequential>
+				<propertyregex property="dir.feature.jar"
+				               input="@{feature.jar}"
+				               regexp=".*\\(.*)\.jar"
+				               select="\1"
+				               override="yes" />
+				<unzip src="@{feature.jar}"
+				       dest="${java.io.tmpdir}/dynEclipseFeature2bndLib/${dir.feature.jar}">
+					<patternset includes="**/feature.xml" />
+				</unzip>
+
+				<propertyregex property="featureName"
+				               input="${dir.feature.jar}"
+				               regexp="(.*)_.*"
+				               select="\1"
+				               override="yes" />
+				<propertyregex property="featureVersion"
+				               input="${dir.feature.jar}"
+				               regexp=".*_(\d*\.\d*\.\d*)\..*"
+				               select="\1"
+				               override="yes" />
+
+				<xslt in="${java.io.tmpdir}/dynEclipseFeature2bndLib/${dir.feature.jar}/feature.xml"
+				      out="${java.io.tmpdir}/dynEclipseFeature2bndLib/libs/${featureName}/${featureName}-${featureVersion}.lib">
+					<style>
+						<url url="file:/${dir.script}/templates/xslt/extractPluginsFromFeature.xslt" />
+					</style>
+				</xslt>
+				<replaceregexp file="${java.io.tmpdir}/dynEclipseFeature2bndLib/libs/${featureName}/${featureName}-${featureVersion}.lib"
+				               byline="true">
+					<regexp pattern="\s*%.*" />
+					<substitution expression="" />
+				</replaceregexp>
+				<replaceregexp file="${java.io.tmpdir}/dynEclipseFeature2bndLib/libs/${featureName}/${featureName}-${featureVersion}.lib"
+				               flags="g">
+					<regexp pattern="(\r?\n)\s*\r?\n" />
+					<substitution expression="\1" />
+				</replaceregexp>
+			</sequential>
+		</for>
+		<echo message="the created libraries are found inside - ${java.io.tmpdir}/dynEclipseFeature2bndLib/libs" />
+		<echo message="copy folder into your cnf project and link it as &quot;aQute.lib.deployer.FileRepo;readonly=true;...&quot;" />
+	</target>
+
+
+	<target name="mirrorBNDrepo" depends="init">
+		<echo message="mirroring repository to file:/${local.p2repos}/${uri.bnd}" />
+		<p2.mirror raw="true">
+			<source location="https://${uri.bnd}" />
+			<destination location="file:/${local.p2repos}/${uri.bnd}" />
+		</p2.mirror>
+		<echo message="create obr index inside file:/${local.p2repos}/${uri.bnd}/index.xml.gz" />
+		<java jar="${bindexer}" fork="true" dir="${local.p2repos}/${uri.bnd}">
+			<arg value="-d" />
+			<arg value="${local.p2repos}/${uri.bnd}" />
+			<arg value="${local.p2repos}/${uri.bnd}/plugins/*.jar" />
+		</java>
+	</target>
+
+	<target name="mirrorEclipseRelease" depends="init">
+		<echo message="mirroring repository to file:/${local.p2repos}/${uri.eclipseRelease}" />
+		<p2.mirror raw="true">
+			<source location="http://${uri.eclipseRelease}" />
+			<destination location="file:/${local.p2repos}/${uri.eclipseRelease}"
+			             format="file:/${dir.script}/templates/p2repo.packed" />
+		</p2.mirror>
+		<echo message="create obr index inside file:/${local.p2repos}/${uri.eclipseRelease}/index.xml.gz" />
+		<java jar="${bindexer}" fork="true" dir="${local.p2repos}/${uri.eclipseRelease}">
+			<arg value="-d" />
+			<arg value="${local.p2repos}/${uri.eclipseRelease}" />
+			<arg value="${local.p2repos}/${uri.eclipseRelease}/plugins/*.jar" />
+		</java>
+	</target>
+
+	<target name="installDevelopmentEnvironment" depends="init">
+		<property name="p2.repos"
+		          value="file:/${local.p2repos}/${uri.bnd},file:/${local.p2repos}/${uri.eclipseRelease}" />
+
+		<p2.director os="win32"
+		             ws="win32"
+		             arch="x86_64"
+		             roaming="true"
+		             flavor="tooling"
+		             profile="SDKprofile"
+		             destination="${dir.install}"
+		             bundlepool="${dir.install}"
+		             agentLocation="${dir.install}/p2"
+		             metadataRepository="${p2.repos}"
+		             artifactRepository="${p2.repos}"
+		             extraArguments="-profileProperties org.eclipse.update.install.features=true">
+			<iu id="org.eclipse.sdk.ide" />
+			<iu id="bndtools.main.feature.feature.group" />
+			<iu id="bndtools.jarviewer.feature.feature.group" />
+		</p2.director>
+
+		<copy todir="${dir.root}/IDEfix"
+		      file="${dir.script}/templates/launch#eclipse#template.cmd">
+			<filterset begintoken="___" endtoken="___">
+				<filter token="JAVAPATH" value="${dir.java}" />
+			</filterset>
+		</copy>
+
+		<echo message="new installation can be launched via ${dir.root}/IDEfix/launch#eclipse#template.cmd" />
+		<echo message="for new workspaces copy this file and rename the 3 segment of the filename e.g. launch#eclipse#BNDconfig.cmd and launch it" />
+	</target>
+
+	<!-- importing libs -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath path="${dir.script}/tools/ant-contrib-1.0b3.jar" />
+	</taskdef>
+</project>
+

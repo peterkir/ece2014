@@ -1,0 +1,20 @@
+
+##########################################################################################
+# Container for category.container.bnd
+##########################################################################################
+units.0.id=category.container.bnd
+units.0.version=0.0.0
+units.0.provides.1.namespace=org.eclipse.equinox.p2.iu
+units.0.provides.1.name=category.container.bnd
+units.0.provides.1.version=0.0.0
+units.0.properties.1.name=org.eclipse.equinox.p2.type.category
+units.0.properties.1.value=true
+units.0.properties.2.name=org.eclipse.equinox.p2.name
+units.0.properties.2.value=BND bundles 
+
+# include: target.container.bnd
+# - - - - - - - - - - - - - - - - - - - - - - - -
+units.0.requires.1.namespace=org.eclipse.equinox.p2.iu
+units.0.requires.1.name=target.container.bnd.feature.group
+units.0.requires.1.range=0.0.0
+units.0.requires.1.greedy=true

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="project" default="default">
+
+	<dirname property="dir.script.os" file="${ant.file}" />
+	<pathconvert property="dir.script" targetos="unix">
+		<path location="${dir.script.os}" />
+	</pathconvert>
+
+	<dirname property="dir.workspace" file="${dir.script}" />
+
+	<property name="dir.libs" value="${dir.workspace}/cnf/libs" />
+
+	<target name="default">
+		<echo message="configure this script and run a specific target" />
+	</target>
+
+	<target name="fromPDELaunchConfiguration">
+		<loadfile property="selected_target_plugins" srcFile="${dir.workspace}/example.pde.application/example.pde.application.application.launch">
+			<filterchain>
+				<containsregex pattern=".*key=&quot;selected_target_plugins&quot; value=&quot;(.*)&quot;.*" replace="\1" />
+				<tokenfilter>
+					<replaceregex pattern="org.eclipse.osgi@[^,]*,?" replace="" />
+					<replaceregex pattern="@[^,]*,?" replace=";version=latest${line.separator}" flags="g" />
+				</tokenfilter>
+			</filterchain>
+		</loadfile>
+		<echo message="org.eclipse.osgi;version=latest${line.separator}${selected_target_plugins}" file="${dir.libs}/build.eclipse/build.eclipse-4.4.1.lib" />
+		<echo message="${selected_target_plugins}" file="${dir.libs}/run.eclipse/run.eclipse-4.4.1.lib" />
+	</target>
+
+</project>

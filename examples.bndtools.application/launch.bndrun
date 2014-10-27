@@ -1,0 +1,31 @@
+-runfw: org.eclipse.osgi;version='[3.10.1.v20140909-1633,3.10.1.v20140909-1633]'
+-runee: JavaSE-1.7
+-runsystemcapabilities: ${native_capability}
+
+-resolve.effective: active
+
+
+-runproperties: \
+	eclipse.application=examples.bndtools.application.application,\
+	\
+    launch.keep=false,\
+    launch.storage.dir=${project}/rt/cfg,\
+    osgi.instance.area=${project}/rt/data,\
+    eclipse.p2.data.area=${project}/rt/p2,\
+    \
+	osgi.ws=win32,\
+    osgi.os=win32,\
+    osgi.arch=x86_64,\
+    \
+    osgi.console
+    
+-runbundles:\
+	bndtools.runtime.eclipse.applaunch;version=0.3,\
+	\
+	org.apache.felix.gogo.runtime,\
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.command,\
+	\
+	examples.bndtools.application;version=latest,\
+	\
+	run.eclipse;version=4.4.1
