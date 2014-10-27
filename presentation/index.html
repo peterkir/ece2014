@@ -6,7 +6,7 @@
 
 		<title>An epic split between OSGi tooling Eclipse PDE and bndtools - EclipseCon Europe 2014</title>
 
-		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="description" content="An epic split between OSGi tooling Eclipse PDE and bndtools - EclipseCon Europe 2014 - presentation slides - explaining usage of Eclipse PDE and OSGi bnd bndtools usage">
 		<meta name="author" content="Peter Kirschner">
 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -71,7 +71,7 @@
 					* github: https://peterkir.github.io/
 				</section>
 
-				<section data-markdown id="principles">
+				<section data-markdown id="principles" data-notes="^Note:" >
 					### Development Mantra
 					* bootstrap on OS
 					* everything
@@ -83,7 +83,8 @@
 							* target products
 					* be explicit and precise with versions for everything
 
-					* Yes, I do know Internet ;-) BUT it is slow or not available!
+					Note:
+					Yes, I do know Internet ;-) BUT it is slow or not available!
 				</section>
 
 				<section>
@@ -116,13 +117,39 @@
 					</section>
 				</section>
 
-				<section data-markdown>
-				### development target
-				#### eclipse
-				- *.target files can be stored inside project
-				- scope is always the whole IDE => **superset of all requirements of workspace projects!**
-	obr (bindex)
-
+				<section id="comparison">
+					<section id="comparison_1">
+						<h3>Comparison of major differences between PDE vs bndtools</h3>
+						<table>
+							<tr>
+								<th>Topic</th>
+								<th>PDE</th>
+								<th>bndtools</th>
+							<tr>
+							<tr>
+								<td>project layout</td>
+								<td>single bundle from one eclipse project</td>
+								<td>single or multiple bundles from one project</td>
+							<tr>
+							<tr>
+								<td>target scope</td>
+								<td>complete workspace<br><code>*.target</code></td>
+								<td>per eclipse project<br><code>bnd.bnd</code></td>
+							<tr>
+							<tr>
+								<td>MANIFEST handling</td>
+								<td>manual attribute editor</td>
+								<td>many attributes automatically derived</td>
+							<tr>
+							<tr>
+								<td>project files</td>
+								<td><code>.project</code><br>
+								<code>.classpath</code><br>
+								</td>
+								<td>.</td>
+							<tr>
+						</table>
+					</section>
 				</section>
 				
 				<section>
@@ -170,6 +197,10 @@
 
 					* problem: mirroring a p2 repository results in .blobstore folder
 					* solution: https://wiki.eclipse.org/Equinox/p2/p2.mirrorsURL#How_to_avoid_.blobstore_for_.2A.jar.pack.gz_files
+					
+					* problem: mirrored p2 repositories might contain inside references to other p2
+					repositories
+					* solution: download references p2 repos and make remote reference relative
 				</section>
 
 				<section>
@@ -313,11 +344,11 @@
 				progress: true,
 				history: true,
 				center: true,
-				overview: true,
+				o: true,
 				slideNumber: true,
 				
 				theme: Reveal.getQueryHash().theme || 'solarized_pk', // beige,blood,default,moon,night,serif,simple,sky,solarized
-				transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+				transition: Reveal.getQueryHash().transition || 'cube', // default/cube/page/concave/zoom/linear/fade/none
 
 				// Parallax scrolling
 				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
