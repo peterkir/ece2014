@@ -1,7 +1,9 @@
 EclipseCon Europe 2014 
 =======
 
-https://www.eclipsecon.org/europe2014/session/epic-split-between-osgi-tooling-eclipse-pde-and-bndtools
+[Abstract](https://www.eclipsecon.org/europe2014/session/epic-split-between-osgi-tooling-eclipse-pde-and-bndtools)
+
+[Presentation](http://peterkir.github.io/201410_EclipseCon_Europe/presentation/index.html)
 
 example source code
 
