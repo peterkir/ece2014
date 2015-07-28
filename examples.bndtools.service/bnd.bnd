@@ -1,3 +1,4 @@
+-include: ${workspace}/cnf/jdt.properties
 -buildpath: osgi.core,\
 	osgi.cmpn,\
 	biz.aQute.bnd.annotation,\
