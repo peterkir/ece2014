@@ -5,7 +5,7 @@
         <location type="Directory" path="${system_property:java.io.tmpdir}/buildBndBundles/repo_OSGi"/>
         <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="org.eclipse.rcp.feature.group" version="0.0.0"/>
-            <repository location="file:/F:/IDEfix_repos/download.eclipse.org/eclipse/updates/4.4/R-4.4.1-201409250400"/>
+            <repository location="http://download.eclipse.org/eclipse/updates/4.4"/>
         </location>
     </locations>
     <environment>
